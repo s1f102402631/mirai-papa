@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #163b68;
+  --orange: #ef7548;
+  --cream: #fffaf7;
+  --muted: #f3f5f7;
+  --text: #17395f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--cream);
+  color: var(--text);
+  font-family: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
