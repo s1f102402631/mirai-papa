@@ -60,25 +60,43 @@ const typeFilters: Array<ResourceType | "すべて"> = ["すべて", "YouTube", 
 const authorityFilters: Array<ResourceAuthority | "すべて"> = ["すべて", "行政", "それ以外"];
 
 export default function Resources() {
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 0.6 });
+  const INITIAL_SCALE = 0.35;
+  const MIN_SCALE = 0.25;
+  const MAX_SCALE = 1.25;
+  const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
   const [dragging, setDragging] = useState(false);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [typeFilter, setTypeFilter] = useState<ResourceType | "すべて">("すべて");
   const [authorityFilter, setAuthorityFilter] = useState<ResourceAuthority | "すべて">("すべて");
+  const mapRef = useRef<HTMLDivElement>(null);
+  const transformRef = useRef(transform);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
-  const pinch = useRef({ distance: 0, scale: 1 });
-  const clampScale = (scale: number) => Math.min(2.2, Math.max(0.2, scale));
+  const pinch = useRef({ distance: 0, scale: INITIAL_SCALE });
+  const raf = useRef<number | null>(null);
+  const clampScale = (scale: number) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+
+  const renderTransform = (next: { x: number; y: number; scale: number }) => {
+    transformRef.current = next;
+    if (raf.current !== null) return;
+    raf.current = requestAnimationFrame(() => {
+      if (mapRef.current) {
+        mapRef.current.style.transform = `translate3d(calc(-50% + ${transformRef.current.x}px), calc(-50% + ${transformRef.current.y}px), 0) scale(${transformRef.current.scale})`;
+      }
+      raf.current = null;
+    });
+  };
 
   const beginPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     e.currentTarget.setPointerCapture(e.pointerId);
+    const current = transformRef.current;
     if (pointers.current.size === 1) {
-      start.current = { x: e.clientX, y: e.clientY, offsetX: transform.x, offsetY: transform.y };
+      start.current = { x: e.clientX, y: e.clientY, offsetX: current.x, offsetY: current.y };
       setDragging(true);
     } else if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
-      pinch.current = { distance: Math.hypot(a.x - b.x, a.y - b.y), scale: transform.scale };
+      pinch.current = { distance: Math.hypot(a.x - b.x, a.y - b.y), scale: current.scale };
       setDragging(false);
     }
   };
@@ -86,23 +104,39 @@ export default function Resources() {
   const movePointer = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!pointers.current.has(e.pointerId)) return;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const current = transformRef.current;
     if (pointers.current.size >= 2) {
       const [a, b] = [...pointers.current.values()];
       const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinch.current.distance > 0) setTransform((current) => ({ ...current, scale: clampScale(pinch.current.scale * (distance / pinch.current.distance)) }));
+      if (pinch.current.distance > 0) {
+        renderTransform({ ...current, scale: clampScale(pinch.current.scale * (distance / pinch.current.distance)) });
+      }
       return;
     }
-    if (dragging) setTransform((current) => ({ ...current, x: start.current.offsetX + e.clientX - start.current.x, y: start.current.offsetY + e.clientY - start.current.y }));
+    if (dragging) {
+      renderTransform({ ...current, x: start.current.offsetX + e.clientX - start.current.x, y: start.current.offsetY + e.clientY - start.current.y });
+    }
   };
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     pointers.current.delete(e.pointerId);
+    setTransform(transformRef.current);
     if (pointers.current.size === 0) setDragging(false);
     if (pointers.current.size < 2) pinch.current.distance = 0;
   };
 
-  const zoom = (amount: number) => setTransform((current) => ({ ...current, scale: clampScale(current.scale + amount) }));
-  const reset = () => setTransform({ x: 0, y: 0, scale: 0.6 });
+  const zoom = (amount: number) => {
+    const next = { ...transformRef.current, scale: clampScale(transformRef.current.scale + amount) };
+    renderTransform(next);
+    setTransform(next);
+  };
+
+  const reset = () => {
+    const next = { x: 0, y: 0, scale: INITIAL_SCALE };
+    renderTransform(next);
+    setTransform(next);
+  };
+
   const selectResource = (resource: Resource) => setSelectedResource(resource);
 
   const filteredResources = resources.filter((resource) =>
@@ -122,7 +156,7 @@ export default function Resources() {
           </div>
 
           <div className="relative h-[540px] touch-none select-none overflow-hidden cursor-grab active:cursor-grabbing" onPointerDown={beginPointer} onPointerMove={movePointer} onPointerUp={endPointer} onPointerCancel={endPointer}>
-            <div className="absolute left-1/2 top-1/2 h-[850px] w-[850px]" style={{ transform: `translate3d(calc(-50% + ${transform.x}px), calc(-50% + ${transform.y}px), 0) scale(${transform.scale})`, transformOrigin: "center" }}>
+            <div ref={mapRef} className="absolute left-1/2 top-1/2 h-[850px] w-[850px] will-change-transform" style={{ transform: `translate3d(calc(-50% + ${transform.x}px), calc(-50% + ${transform.y}px), 0) scale(${transform.scale})`, transformOrigin: "center" }}>
               <div className="absolute left-1/2 top-1/2 h-px w-[760px] -translate-x-1/2 bg-[#cfc9bf]" />
               <div className="absolute left-1/2 top-1/2 h-[760px] w-px -translate-y-1/2 bg-[#cfc9bf]" />
               {quadrants.map((quadrant) => (
