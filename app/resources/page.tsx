@@ -113,9 +113,7 @@ export default function Resources() {
   return (
     <AppShell>
       <div className="py-4">
-        <p className="text-sm font-bold text-[#d66a43]">INFORMATION</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-[#25364a]">子育てに役立つ情報</h1>
-        <p className="mt-4 text-sm leading-7 text-[#69737e]">子育てや生活に関するサービス・情報をまとめています。</p>
+        <h1 className="text-3xl font-black tracking-tight text-[#25364a]">子育てに役立つ情報</h1>
 
         <section className="mt-8 overflow-hidden rounded-3xl border border-[#d9d4ca] bg-[#eeeae2]">
           <div className="flex items-center justify-between border-b border-[#d9d4ca] bg-[#f8f5ef] px-4 py-3">
@@ -166,7 +164,7 @@ export default function Resources() {
           <div className="mt-3 space-y-3">
             {filteredResources.map((resource) => <ResourceCard key={resource.href} resource={resource} onSelect={selectResource} />)}
           </div>
-          <p className="mt-6 text-[11px] leading-5 text-[#8a929b]">※各サービス・サイトの内容は変更される場合があります。閲覧日：2026年7月7日</p>
+          <p className="mt-6 text-[11px] leading-5 text-[#8a929b]">※各サービス・サイトの内容は変更される場合があります。最終更新日：2026年9月3日</p>
         </section>
 
         {selectedResource && (
