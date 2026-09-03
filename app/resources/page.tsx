@@ -4,20 +4,30 @@ import AppShell from "../../components/AppShell";
 import { useRef, useState } from "react";
 import { Move, Plus, Minus, RotateCcw } from "lucide-react";
 
+type ResourceType = "YouTube" | "X" | "サイト" | "アプリ";
+type ResourceAuthority = "行政" | "それ以外";
+
 const resources = [
-  { title: "Zaim", category: "お金", description: "家計簿・支出管理を知る", href: "https://play.google.com/store/apps/details?id=net.zaim.android" },
-  { title: "マネーフォワード ME", category: "お金", description: "家計管理・資産管理を知る", href: "https://moneyforward.com/me" },
-  { title: "TimeTree", category: "時間・予定", description: "家族の予定共有を知る", href: "https://timetreeapp.com/intl/ja/newsroom/2024-12-23/what-is-timetree" },
-  { title: "MILIZE「ミルイゼ」", category: "お金・将来", description: "お金の将来設計を知る", href: "https://milize.co.jp/news/20230530_5469" },
-  { title: "Famm", category: "家族・記録", description: "子どもの写真・家族の記録を知る", href: "https://apps.apple.com/jp/app/famm-%E6%AF%8E%E6%9C%88%E5%B1%8A%E3%81%8F%E5%AD%90%E4%BE%9B%E3%81%AE%E3%83%95%E3%82%A9%E3%83%88%E3%82%AB%E3%83%AC%E3%83%B3%E3%83%80%E3%83%BC/id872834141" },
-  { title: "みてね", category: "家族・記録", description: "家族で子どもの写真を共有する方法を知る", href: "https://play.google.com/store/apps/details?id=us.mitene" },
-  { title: "BABY365", category: "家族・記録", description: "子どもの成長記録を知る", href: "https://apps.apple.com/jp/app/%E8%B5%A4%E3%81%A1%E3%82%83%E3%82%93%E8%A8%98%E9%8C%B2-%E5%86%99%E7%9C%9F%E3%82%A2%E3%83%AB%E3%83%90%E3%83%A0%E4%BD%9C%E6%88%90-baby365-%E3%83%95%E3%82%A9%E3%83%88%E3%83%96%E3%83%83%E3%82%AF/id876394777" },
-  { title: "トツキトオカ", category: "妊娠・夫婦", description: "夫婦で妊娠期間を共有する方法を知る", href: "https://apps.apple.com/jp/app/%E3%83%88%E3%83%84%E3%82%AD%E3%83%88%E3%82%AA%E3%82%AB-%E5%A4%AB%E5%A9%A6%E3%81%A7%E5%85%B1%E6%9C%89%E3%81%A7%E3%81%8D%E3%82%8B-%E5%A6%8A%E5%A8%A0%E8%A8%98%E9%8C%B2-%E6%97%A5%E8%A8%98-%E3%82%A2%E3%83%97%E3%83%AA/id995864179" },
-  { title: "ぴよログ", category: "育児・記録", description: "子どもの生活記録を知る", href: "https://app-liv.jp/4494082/" },
-  { title: "ママリ", category: "妊娠・育児", description: "妊娠・子育ての体験や情報を知る", href: "https://promo-app.mamari.jp/" },
-  { title: "ルナルナ", category: "妊娠・身体", description: "生理・妊娠などの情報を知る", href: "https://lnln.jp/" },
-  { title: "厚生労働省｜共育（トモイク）プロジェクト", category: "制度・仕事", description: "男性の育児参加や仕事との両立を知る", href: "https://tomoiku.mhlw.go.jp" },
-  { title: "パパninaru 育休シミュレーター", category: "制度・仕事", description: "育休取得をシミュレーションする", href: "https://192abc.com/460703" },
+  { title: "Zaim", category: "お金", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "家計簿・支出管理を知る", href: "https://play.google.com/store/apps/details?id=net.zaim.android" },
+  { title: "マネーフォワード ME", category: "お金", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "家計管理・資産管理を知る", href: "https://moneyforward.com/me" },
+  { title: "TimeTree", category: "時間・予定", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "家族の予定共有を知る", href: "https://timetreeapp.com/intl/ja/newsroom/2024-12-23/what-is-timetree" },
+  { title: "MILIZE「ミルイゼ」", category: "お金・将来", type: "サイト" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "お金の将来設計を知る", href: "https://milize.co.jp/news/20230530_5469" },
+  { title: "Famm", category: "家族・記録", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "子どもの写真・家族の記録を知る", href: "https://apps.apple.com/jp/app/famm-%E6%AF%8E%E6%9C%88%E5%B1%8A%E3%81%8F%E5%AD%90%E4%BE%9B%E3%81%AE%E3%83%95%E3%82%A9%E3%83%88%E3%82%AB%E3%83%AC%E3%83%B3%E3%83%80%E3%83%BC/id872834141" },
+  { title: "みてね", category: "家族・記録", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "家族で子どもの写真を共有する方法を知る", href: "https://play.google.com/store/apps/details?id=us.mitene" },
+  { title: "BABY365", category: "家族・記録", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "子どもの成長記録を知る", href: "https://apps.apple.com/jp/app/%E8%B5%A4%E3%81%A1%E3%82%83%E3%82%93%E8%A8%98%E9%8C%B2-%E5%86%99%E7%9C%9F%E3%82%A2%E3%83%AB%E3%83%90%E3%83%A0%E4%BD%9C%E6%88%90-baby365-%E3%83%95%E3%82%A9%E3%83%88%E3%83%96%E3%83%83%E3%82%AF/id876394777" },
+  { title: "トツキトオカ", category: "妊娠・夫婦", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "夫婦で妊娠期間を共有する方法を知る", href: "https://apps.apple.com/jp/app/%E3%83%88%E3%83%84%E3%82%AD%E3%83%88%E3%82%AA%E3%82%AB-%E5%A4%AB%E5%A9%A6%E3%81%A7%E5%85%B1%E6%9C%89%E3%81%A7%E3%81%8D%E3%82%8B-%E5%A6%8A%E5%A8%A0%E8%A8%98%E9%8C%B2-%E6%97%A5%E8%A8%98-%E3%82%A2%E3%83%97%E3%83%AA/id995864179" },
+  { title: "ぴよログ", category: "育児・記録", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "子どもの生活記録を知る", href: "https://app-liv.jp/4494082/" },
+  { title: "ママリ", category: "妊娠・育児", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "妊娠・子育ての体験や情報を知る", href: "https://promo-app.mamari.jp/" },
+  { title: "ルナルナ", category: "妊娠・身体", type: "サイト" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "生理・妊娠などの情報を知る", href: "https://lnln.jp/" },
+  { title: "厚生労働省｜共育（トモイク）プロジェクト", category: "制度・仕事", type: "サイト" as ResourceType, authority: "行政" as ResourceAuthority, description: "男性の育児参加や仕事との両立を知る", href: "https://tomoiku.mhlw.go.jp" },
+  { title: "パパninaru 育休シミュレーター", category: "制度・仕事", type: "サイト" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "育休取得をシミュレーションする", href: "https://192abc.com/460703" },
+  { title: "こども家庭庁｜公式YouTube", category: "行政・情報", type: "YouTube" as ResourceType, authority: "行政" as ResourceAuthority, description: "こども家庭庁の公式動画を見る", href: "https://www.youtube.com/@KodomoKatei" },
+  { title: "こども家庭庁｜公式X", category: "行政・情報", type: "X" as ResourceType, authority: "行政" as ResourceAuthority, description: "こども家庭庁の公式発信を見る", href: "https://x.com/KodomoKatei" },
+  { title: "こども家庭庁｜公式note", category: "行政・情報", type: "サイト" as ResourceType, authority: "行政" as ResourceAuthority, description: "こども家庭庁の公式記事を読む", href: "https://kodomo-gov.note.jp/" },
+  { title: "こども家庭庁｜公式サイト", category: "行政・情報", type: "サイト" as ResourceType, authority: "行政" as ResourceAuthority, description: "こども家庭庁の制度・情報を見る", href: "https://www.cfa.go.jp/" },
+  { title: "母子健康手帳情報支援サイト", category: "行政・情報", type: "サイト" as ResourceType, authority: "行政" as ResourceAuthority, description: "母子健康手帳に関する情報を知る", href: "https://mchbook.cfa.go.jp/" },
+  { title: "子育てタウン", category: "育児・地域", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "地域の子育て情報を知る", href: "https://play.google.com/store/apps/details?id=jp.mamafre.mamafre&hl=ja&pli=1" },
+  { title: "母子モ", category: "妊娠・育児", type: "アプリ" as ResourceType, authority: "それ以外" as ResourceAuthority, description: "妊娠・出産・子育てを記録する", href: "https://www.mchh.jp/login" },
 ];
 
 const quadrants = [
@@ -46,10 +56,15 @@ function ResourceCard({ resource, compact = false, onSelect }: { resource: Resou
   );
 }
 
+const typeFilters: Array<ResourceType | "すべて"> = ["すべて", "YouTube", "X", "サイト", "アプリ"];
+const authorityFilters: Array<ResourceAuthority | "すべて"> = ["すべて", "行政", "それ以外"];
+
 export default function Resources() {
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 0.75 });
+  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 0.6 });
   const [dragging, setDragging] = useState(false);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [typeFilter, setTypeFilter] = useState<ResourceType | "すべて">("すべて");
+  const [authorityFilter, setAuthorityFilter] = useState<ResourceAuthority | "すべて">("すべて");
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
   const pinch = useRef({ distance: 0, scale: 1 });
@@ -87,9 +102,13 @@ export default function Resources() {
   };
 
   const zoom = (amount: number) => setTransform((current) => ({ ...current, scale: clampScale(current.scale + amount) }));
-  const reset = () => setTransform({ x: 0, y: 0, scale: 0.75 });
-
+  const reset = () => setTransform({ x: 0, y: 0, scale: 0.6 });
   const selectResource = (resource: Resource) => setSelectedResource(resource);
+
+  const filteredResources = resources.filter((resource) =>
+    (typeFilter === "すべて" || resource.type === typeFilter) &&
+    (authorityFilter === "すべて" || resource.authority === authorityFilter)
+  );
 
   return (
     <AppShell>
@@ -129,7 +148,24 @@ export default function Resources() {
         <section className="mt-10">
           <h2 className="text-xl font-black text-[#25364a]">すべての情報</h2>
           <p className="mt-2 text-xs leading-6 text-[#8a929b]">サービスや公的情報を一覧で確認できます。</p>
-          <div className="mt-4 space-y-3">{resources.map((resource) => <ResourceCard key={resource.href} resource={resource} onSelect={selectResource} />)}</div>
+
+          <div className="mt-4 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {typeFilters.map((filter) => (
+                <button key={filter} type="button" onClick={() => setTypeFilter(filter)} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${typeFilter === filter ? "border-[#25364a] bg-[#25364a] text-white" : "border-[#d9d4ca] bg-white text-[#69737e] hover:bg-[#f8f5ef]"}`}>{filter}</button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {authorityFilters.map((filter) => (
+                <button key={filter} type="button" onClick={() => setAuthorityFilter(filter)} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${authorityFilter === filter ? "border-[#d66a43] bg-[#d66a43] text-white" : "border-[#d9d4ca] bg-white text-[#69737e] hover:bg-[#f8f5ef]"}`}>{filter}</button>
+              ))}
+            </div>
+          </div>
+
+          <p className="mt-3 text-[11px] text-[#8a929b]">{filteredResources.length}件表示</p>
+          <div className="mt-3 space-y-3">
+            {filteredResources.map((resource) => <ResourceCard key={resource.href} resource={resource} onSelect={selectResource} />)}
+          </div>
           <p className="mt-6 text-[11px] leading-5 text-[#8a929b]">※各サービス・サイトの内容は変更される場合があります。閲覧日：2026年7月7日</p>
         </section>
 
