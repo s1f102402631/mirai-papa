@@ -2,7 +2,7 @@
 
 import AppShell from "../../components/AppShell";
 import { useRef, useState } from "react";
-import { ExternalLink, Move } from "lucide-react";
+import { Move, Plus, Minus, RotateCcw } from "lucide-react";
 
 const resources = [
   { title: "Zaim", category: "お金", description: "家計簿・支出管理を知る", href: "https://play.google.com/store/apps/details?id=net.zaim.android" },
@@ -28,97 +28,103 @@ const quadrants = [
   { title: "家族・記録", subtitle: "共有・思い出・成長記録", x: 1, y: 1, items: resources.filter((r) => r.category.includes("家族") || r.category.includes("記録")) },
 ];
 
-function ResourceCard({ resource }: { resource: (typeof resources)[number] }) {
+type Resource = (typeof resources)[number];
+
+function SiteIcon({ resource }: { resource: Resource }) {
+  const domain = new URL(resource.href).hostname;
+  return <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt="" className="h-8 w-8 shrink-0 rounded-lg" loading="lazy" />;
+}
+
+function ResourceCard({ resource, compact = false }: { resource: Resource; compact?: boolean }) {
   return (
-    <a href={resource.href} target="_blank" rel="noreferrer" className="block rounded-2xl border border-[#ded9d0] bg-white p-4 transition hover:-translate-y-0.5 hover:bg-[#fcfaf6]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-bold tracking-wide text-[#d66a43]">{resource.category}</p>
-          <h3 className="mt-1 text-sm font-black text-[#25364a]">{resource.title}</h3>
-          <p className="mt-1 text-xs leading-5 text-[#69737e]">{resource.description}</p>
-        </div>
-        <ExternalLink size={15} className="mt-0.5 shrink-0 text-[#d66a43]" />
-      </div>
+    <a href={resource.href} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()} className={`flex items-center gap-3 rounded-xl border border-[#ded9d0] bg-white transition hover:bg-[#fcfaf6] ${compact ? "px-3 py-2.5" : "p-4"}`}>
+      <SiteIcon resource={resource} />
+      <p className={`min-w-0 truncate font-bold text-[#25364a] ${compact ? "text-xs" : "text-sm"}`}>{resource.title}</p>
     </a>
   );
 }
 
 export default function Resources() {
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [dragging, setDragging] = useState(false);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
+  const pinch = useRef({ distance: 0, scale: 1 });
+  const clampScale = (scale: number) => Math.min(2.2, Math.max(0.65, scale));
 
-  const beginDrag = (clientX: number, clientY: number) => {
-    start.current = { x: clientX, y: clientY, offsetX: offset.x, offsetY: offset.y };
-    setDragging(true);
+  const beginPointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    e.currentTarget.setPointerCapture(e.pointerId);
+    if (pointers.current.size === 1) {
+      start.current = { x: e.clientX, y: e.clientY, offsetX: transform.x, offsetY: transform.y };
+      setDragging(true);
+    } else if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = { distance: Math.hypot(a.x - b.x, a.y - b.y), scale: transform.scale };
+      setDragging(false);
+    }
   };
 
-  const moveDrag = (clientX: number, clientY: number) => {
-    if (!dragging) return;
-    setOffset({
-      x: start.current.offsetX + clientX - start.current.x,
-      y: start.current.offsetY + clientY - start.current.y,
-    });
+  const movePointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const distance = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch.current.distance > 0) setTransform((current) => ({ ...current, scale: clampScale(pinch.current.scale * (distance / pinch.current.distance)) }));
+      return;
+    }
+    if (dragging) setTransform((current) => ({ ...current, x: start.current.offsetX + e.clientX - start.current.x, y: start.current.offsetY + e.clientY - start.current.y }));
   };
 
-  const endDrag = () => setDragging(false);
+  const endPointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size === 0) setDragging(false);
+    if (pointers.current.size < 2) pinch.current.distance = 0;
+  };
+
+  const zoom = (amount: number) => setTransform((current) => ({ ...current, scale: clampScale(current.scale + amount) }));
+  const reset = () => setTransform({ x: 0, y: 0, scale: 1 });
 
   return (
     <AppShell>
       <div className="py-4">
         <p className="text-sm font-bold text-[#d66a43]">INFORMATION</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-[#25364a]">子育てに役立つ情報</h1>
-        <p className="mt-4 text-sm leading-7 text-[#69737e]">気になることから探せるように、関連するサービスや情報をマップにまとめました。まずは中央から、気になる方向へスワイプしてみてください。</p>
+        <p className="mt-4 text-sm leading-7 text-[#69737e]">子育てや生活に関するサービス・情報をまとめています。</p>
 
         <section className="mt-8 overflow-hidden rounded-3xl border border-[#d9d4ca] bg-[#eeeae2]">
           <div className="flex items-center justify-between border-b border-[#d9d4ca] bg-[#f8f5ef] px-4 py-3">
-            <div>
-              <p className="text-xs font-black text-[#25364a]">不安・関心マップ</p>
-              <p className="mt-0.5 text-[10px] text-[#8a929b]">中央からスワイプ / ドラッグ</p>
-            </div>
+            <div><p className="text-xs font-black text-[#25364a]">情報マップ</p><p className="mt-0.5 text-[10px] text-[#8a929b]">指で移動・ピンチで拡大縮小</p></div>
             <Move size={16} className="text-[#8a929b]" />
           </div>
 
-          <div
-            className="relative h-[540px] touch-none select-none overflow-hidden cursor-grab active:cursor-grabbing"
-            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); beginDrag(e.clientX, e.clientY); }}
-            onPointerMove={(e) => moveDrag(e.clientX, e.clientY)}
-            onPointerUp={endDrag}
-            onPointerCancel={endDrag}
-            onPointerLeave={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) endDrag(); }}
-          >
-            <div className="absolute left-1/2 top-1/2 h-[850px] w-[850px]" style={{ transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))` }}>
+          <div className="relative h-[540px] touch-none select-none overflow-hidden cursor-grab active:cursor-grabbing" onPointerDown={beginPointer} onPointerMove={movePointer} onPointerUp={endPointer} onPointerCancel={endPointer}>
+            <div className="absolute left-1/2 top-1/2 h-[850px] w-[850px]" style={{ transform: `translate3d(calc(-50% + ${transform.x}px), calc(-50% + ${transform.y}px), 0) scale(${transform.scale})`, transformOrigin: "center" }}>
               <div className="absolute left-1/2 top-1/2 h-px w-[760px] -translate-x-1/2 bg-[#cfc9bf]" />
               <div className="absolute left-1/2 top-1/2 h-[760px] w-px -translate-y-1/2 bg-[#cfc9bf]" />
-              <p className="absolute left-1/2 top-10 -translate-x-1/2 text-[11px] font-bold text-[#8a929b]">まずは将来のことから</p>
-              <p className="absolute bottom-10 left-1/2 -translate-x-1/2 text-[11px] font-bold text-[#8a929b]">日々の暮らしから考える</p>
-              <p className="absolute left-10 top-1/2 -translate-y-1/2 -rotate-90 text-[11px] font-bold text-[#8a929b]">自分の不安</p>
-              <p className="absolute right-10 top-1/2 -translate-y-1/2 rotate-90 text-[11px] font-bold text-[#8a929b]">家族のこと</p>
-
               {quadrants.map((quadrant) => (
                 <div key={quadrant.title} className="absolute w-[320px] rounded-3xl border border-[#d9d4ca] bg-[#fffdfa]/95 p-5 shadow-sm" style={{ left: quadrant.x === 0 ? 35 : 495, top: quadrant.y === 0 ? 35 : 495 }}>
                   <h2 className="text-xl font-black text-[#25364a]">{quadrant.title}</h2>
                   <p className="mt-1 text-xs text-[#69737e]">{quadrant.subtitle}</p>
-                  <div className="mt-4 space-y-2">
-                    {quadrant.items.map((resource) => <ResourceCard key={resource.href} resource={resource} />)}
-                  </div>
+                  <div className="mt-4 space-y-2">{quadrant.items.map((resource) => <ResourceCard key={resource.href} resource={resource} compact />)}</div>
                 </div>
               ))}
+              <div className="absolute left-1/2 top-1/2 z-10 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-[#fffdfa] bg-[#25364a] text-center text-xs font-black leading-5 text-white shadow-lg">子育て情報</div>
+            </div>
 
-              <div className="absolute left-1/2 top-1/2 z-10 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-[#fffdfa] bg-[#25364a] text-center text-xs font-black leading-5 text-white shadow-lg">
-                気になることを
-                <br />探してみる
-              </div>
+            <div className="absolute bottom-3 right-3 z-20 flex overflow-hidden rounded-xl border border-[#d9d4ca] bg-white/95 shadow-sm">
+              <button aria-label="拡大" onPointerDown={(e) => e.stopPropagation()} onClick={() => zoom(0.15)} className="flex h-10 w-10 items-center justify-center text-[#25364a] hover:bg-[#f8f5ef]"><Plus size={16} /></button>
+              <button aria-label="縮小" onPointerDown={(e) => e.stopPropagation()} onClick={() => zoom(-0.15)} className="flex h-10 w-10 items-center justify-center border-l border-[#d9d4ca] text-[#25364a] hover:bg-[#f8f5ef]"><Minus size={16} /></button>
+              <button aria-label="リセット" onPointerDown={(e) => e.stopPropagation()} onClick={reset} className="flex h-10 w-10 items-center justify-center border-l border-[#d9d4ca] text-[#25364a] hover:bg-[#f8f5ef]"><RotateCcw size={14} /></button>
             </div>
           </div>
         </section>
 
         <section className="mt-10">
           <h2 className="text-xl font-black text-[#25364a]">すべての情報</h2>
-          <p className="mt-2 text-xs leading-6 text-[#8a929b]">サービスや公的情報を一覧でも確認できます。</p>
-          <div className="mt-4 space-y-3">
-            {resources.map((resource) => <ResourceCard key={resource.href} resource={resource} />)}
-          </div>
+          <p className="mt-2 text-xs leading-6 text-[#8a929b]">サービスや公的情報を一覧で確認できます。</p>
+          <div className="mt-4 space-y-3">{resources.map((resource) => <ResourceCard key={resource.href} resource={resource} />)}</div>
           <p className="mt-6 text-[11px] leading-5 text-[#8a929b]">※各サービス・サイトの内容は変更される場合があります。閲覧日：2026年7月7日</p>
         </section>
       </div>
