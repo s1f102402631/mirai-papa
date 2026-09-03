@@ -9,11 +9,10 @@ const resources = [
   { title: "マネーフォワード ME", category: "お金", description: "家計管理・資産管理を知る", href: "https://moneyforward.com/me" },
   { title: "TimeTree", category: "時間・予定", description: "家族の予定共有を知る", href: "https://timetreeapp.com/intl/ja/newsroom/2024-12-23/what-is-timetree" },
   { title: "MILIZE「ミルイゼ」", category: "お金・将来", description: "お金の将来設計を知る", href: "https://milize.co.jp/news/20230530_5469" },
-  { title: "パパninaru", category: "妊娠・育児", description: "パパ向けの妊娠・育児情報を知る", href: "https://play.google.com/store/apps/details?id=jp.co.eversense.papaninaru" },
   { title: "Famm", category: "家族・記録", description: "子どもの写真・家族の記録を知る", href: "https://apps.apple.com/jp/app/famm-%E6%AF%8E%E6%9C%88%E5%B1%8A%E3%81%8F%E5%AD%90%E4%BE%9B%E3%81%AE%E3%83%95%E3%82%A9%E3%83%88%E3%82%AB%E3%83%AC%E3%83%B3%E3%83%80%E3%83%BC/id872834141" },
   { title: "みてね", category: "家族・記録", description: "家族で子どもの写真を共有する方法を知る", href: "https://play.google.com/store/apps/details?id=us.mitene" },
   { title: "BABY365", category: "家族・記録", description: "子どもの成長記録を知る", href: "https://apps.apple.com/jp/app/%E8%B5%A4%E3%81%A1%E3%82%83%E3%82%93%E8%A8%98%E9%8C%B2-%E5%86%99%E7%9C%9F%E3%82%A2%E3%83%AB%E3%83%90%E3%83%A0%E4%BD%9C%E6%88%90-baby365-%E3%83%95%E3%82%A9%E3%83%88%E3%83%96%E3%83%83%E3%82%AF/id876394777" },
-  { title: "トツキトオカ", category: "妊娠・夫婦", description: "夫婦で妊娠期間を共有する方法を知る", href: "https://apps.apple.com/jp/app/%E3%83%88%E3%83%84%E3%82%AD%E3%83%88%E3%82%AA%E3%82%AB-%E5%A4%AB%E5%A9%A6%E3%81%A7%E5%85%B1%E6%9C%89%E3%81%A7%E3%81%8D%E3%82%8B-%E5%A6%8A%E5%A8%A0%E8%A8%98%E9%8C%84-%E6%97%A5%E8%A8%98-%E3%82%A2%E3%83%97%E3%83%AA/id995864179" },
+  { title: "トツキトオカ", category: "妊娠・夫婦", description: "夫婦で妊娠期間を共有する方法を知る", href: "https://apps.apple.com/jp/app/%E3%83%88%E3%83%84%E3%82%AD%E3%83%88%E3%82%AA%E3%82%AB-%E5%A4%AB%E5%A9%A6%E3%81%A7%E5%85%B1%E6%9C%89%E3%81%A7%E3%81%8D%E3%82%8B-%E5%A6%8A%E5%A8%A0%E8%A8%98%E9%8C%B2-%E6%97%A5%E8%A8%98-%E3%82%A2%E3%83%97%E3%83%AA/id995864179" },
   { title: "ぴよログ", category: "育児・記録", description: "子どもの生活記録を知る", href: "https://app-liv.jp/4494082/" },
   { title: "ママリ", category: "妊娠・育児", description: "妊娠・子育ての体験や情報を知る", href: "https://promo-app.mamari.jp/" },
   { title: "ルナルナ", category: "妊娠・身体", description: "生理・妊娠などの情報を知る", href: "https://lnln.jp/" },
@@ -39,7 +38,10 @@ function ResourceCard({ resource, compact = false }: { resource: Resource; compa
   return (
     <a href={resource.href} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()} className={`flex items-center gap-3 rounded-xl border border-[#ded9d0] bg-white transition hover:bg-[#fcfaf6] ${compact ? "px-3 py-2.5" : "p-4"}`}>
       <SiteIcon resource={resource} />
-      <p className={`min-w-0 truncate font-bold text-[#25364a] ${compact ? "text-xs" : "text-sm"}`}>{resource.title}</p>
+      <div className="min-w-0 flex-1">
+        <p className={`truncate font-bold text-[#25364a] ${compact ? "text-xs" : "text-sm"}`}>{resource.title}</p>
+        {!compact && <p className="mt-0.5 truncate text-[11px] text-[#8a929b]">{resource.description}</p>}
+      </div>
     </a>
   );
 }
@@ -50,7 +52,7 @@ export default function Resources() {
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
   const pinch = useRef({ distance: 0, scale: 1 });
-  const clampScale = (scale: number) => Math.min(2.2, Math.max(0.65, scale));
+  const clampScale = (scale: number) => Math.min(2.2, Math.max(0.35, scale));
 
   const beginPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
