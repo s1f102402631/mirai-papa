@@ -34,25 +34,26 @@ function SiteIcon({ resource }: { resource: Resource }) {
   return <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt="" className="h-8 w-8 shrink-0 rounded-lg" loading="lazy" />;
 }
 
-function ResourceCard({ resource, compact = false }: { resource: Resource; compact?: boolean }) {
+function ResourceCard({ resource, compact = false, onSelect }: { resource: Resource; compact?: boolean; onSelect: (resource: Resource) => void }) {
   return (
-    <a href={resource.href} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()} className={`flex items-center gap-3 rounded-xl border border-[#ded9d0] bg-white transition hover:bg-[#fcfaf6] ${compact ? "px-3 py-2.5" : "p-4"}`}>
+    <button type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => onSelect(resource)} className={`flex w-full items-center gap-3 rounded-xl border border-[#ded9d0] bg-white text-left transition hover:bg-[#fcfaf6] ${compact ? "px-3 py-2.5" : "p-4"}`}>
       <SiteIcon resource={resource} />
       <div className="min-w-0 flex-1">
         <p className={`truncate font-bold text-[#25364a] ${compact ? "text-xs" : "text-sm"}`}>{resource.title}</p>
         {!compact && <p className="mt-0.5 truncate text-[11px] text-[#8a929b]">{resource.description}</p>}
       </div>
-    </a>
+    </button>
   );
 }
 
 export default function Resources() {
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
+  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 0.75 });
   const [dragging, setDragging] = useState(false);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const start = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
   const pinch = useRef({ distance: 0, scale: 1 });
-  const clampScale = (scale: number) => Math.min(2.2, Math.max(0.35, scale));
+  const clampScale = (scale: number) => Math.min(2.2, Math.max(0.2, scale));
 
   const beginPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -86,7 +87,9 @@ export default function Resources() {
   };
 
   const zoom = (amount: number) => setTransform((current) => ({ ...current, scale: clampScale(current.scale + amount) }));
-  const reset = () => setTransform({ x: 0, y: 0, scale: 1 });
+  const reset = () => setTransform({ x: 0, y: 0, scale: 0.75 });
+
+  const selectResource = (resource: Resource) => setSelectedResource(resource);
 
   return (
     <AppShell>
@@ -109,7 +112,7 @@ export default function Resources() {
                 <div key={quadrant.title} className="absolute w-[320px] rounded-3xl border border-[#d9d4ca] bg-[#fffdfa]/95 p-5 shadow-sm" style={{ left: quadrant.x === 0 ? 35 : 495, top: quadrant.y === 0 ? 35 : 495 }}>
                   <h2 className="text-xl font-black text-[#25364a]">{quadrant.title}</h2>
                   <p className="mt-1 text-xs text-[#69737e]">{quadrant.subtitle}</p>
-                  <div className="mt-4 space-y-2">{quadrant.items.map((resource) => <ResourceCard key={resource.href} resource={resource} compact />)}</div>
+                  <div className="mt-4 space-y-2">{quadrant.items.map((resource) => <ResourceCard key={resource.href} resource={resource} compact onSelect={selectResource} />)}</div>
                 </div>
               ))}
               <div className="absolute left-1/2 top-1/2 z-10 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-[#fffdfa] bg-[#25364a] text-center text-xs font-black leading-5 text-white shadow-lg">子育て情報</div>
@@ -126,9 +129,23 @@ export default function Resources() {
         <section className="mt-10">
           <h2 className="text-xl font-black text-[#25364a]">すべての情報</h2>
           <p className="mt-2 text-xs leading-6 text-[#8a929b]">サービスや公的情報を一覧で確認できます。</p>
-          <div className="mt-4 space-y-3">{resources.map((resource) => <ResourceCard key={resource.href} resource={resource} />)}</div>
+          <div className="mt-4 space-y-3">{resources.map((resource) => <ResourceCard key={resource.href} resource={resource} onSelect={selectResource} />)}</div>
           <p className="mt-6 text-[11px] leading-5 text-[#8a929b]">※各サービス・サイトの内容は変更される場合があります。閲覧日：2026年7月7日</p>
         </section>
+
+        {selectedResource && (
+          <div className="fixed inset-x-4 bottom-5 z-50 mx-auto max-w-md rounded-2xl border border-[#d9d4ca] bg-white p-3 shadow-xl">
+            <div className="flex items-center gap-3">
+              <SiteIcon resource={selectedResource} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-black text-[#25364a]">{selectedResource.title}</p>
+                <p className="mt-0.5 truncate text-[10px] text-[#8a929b]">サイトを開きますか？</p>
+              </div>
+              <button type="button" onClick={() => setSelectedResource(null)} className="rounded-lg px-2 py-1.5 text-[11px] text-[#69737e]">閉じる</button>
+              <a href={selectedResource.href} target="_blank" rel="noreferrer" onClick={() => setSelectedResource(null)} className="rounded-lg bg-[#25364a] px-3 py-1.5 text-[11px] font-bold text-white">開く</a>
+            </div>
+          </div>
+        )}
       </div>
     </AppShell>
   );
