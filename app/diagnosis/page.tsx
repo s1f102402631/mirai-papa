@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "../../components/AppShell";
 import { questions, questionCategories, questionOptions, type Answer } from "../../data/content";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function Diagnosis() {
   const router = useRouter();
@@ -13,18 +13,20 @@ export default function Diagnosis() {
   const q = questions[index];
   const choices = questionOptions[index];
 
-  const next = () => {
-    if (!selected) return;
+  const selectAnswer = (value: Answer) => {
     const nextAnswers = [...answers];
-    nextAnswers[index] = selected;
+    nextAnswers[index] = value;
+    setSelected(value);
+
     if (index === questions.length - 1) {
       localStorage.setItem("mirai-papa-answers", JSON.stringify(nextAnswers));
       router.push("/result");
-    } else {
-      setAnswers(nextAnswers);
-      setIndex(index + 1);
-      setSelected(null);
+      return;
     }
+
+    setAnswers(nextAnswers);
+    setIndex(index + 1);
+    setSelected(null);
   };
 
   const back = () => {
@@ -59,7 +61,7 @@ export default function Diagnosis() {
               return (
                 <button
                   key={label}
-                  onClick={() => setSelected(value)}
+                  onClick={() => selectAnswer(value)}
                   className={`flex items-center justify-between rounded-2xl border-2 px-5 py-4 text-left font-bold transition ${selected === value ? "border-[#ef7548] bg-orange-50 text-[#163b68]" : "border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200 hover:bg-white"}`}
                 >
                   <span>{label}</span>
@@ -70,12 +72,9 @@ export default function Diagnosis() {
           </div>
         </div>
 
-        <div className="mt-5 flex gap-3">
-          <button onClick={back} className="flex-1 rounded-2xl border-2 border-slate-200 bg-white px-4 py-4 font-bold text-slate-600">
+        <div className="mt-5">
+          <button onClick={back} className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-4 font-bold text-slate-600">
             <ArrowLeft className="mr-1 inline" size={17} />戻る
-          </button>
-          <button onClick={next} disabled={!selected} className="flex-[2] rounded-2xl bg-[#1769c2] px-4 py-4 font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40">
-            {index === questions.length - 1 ? "結果を見る" : "次の質問へ"}<ArrowRight className="ml-1 inline" size={17} />
           </button>
         </div>
       </div>
