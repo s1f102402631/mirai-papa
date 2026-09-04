@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "../../components/AppShell";
 import { questions, questionCategories, questionOptions, type Answer } from "../../data/content";
-import { ArrowLeft } from "lucide-react";
 
 export default function Diagnosis() {
   const router = useRouter();
@@ -27,15 +26,6 @@ export default function Diagnosis() {
     setAnswers(nextAnswers);
     setIndex(index + 1);
     setSelected(null);
-  };
-
-  const back = () => {
-    if (index === 0) {
-      router.push("/opening");
-      return;
-    }
-    setIndex(index - 1);
-    setSelected(answers[index - 1] ?? null);
   };
 
   return (
@@ -70,12 +60,6 @@ export default function Diagnosis() {
               );
             })}
           </div>
-        </div>
-
-        <div className="mt-5">
-          <button onClick={back} className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-4 font-bold text-slate-600">
-            <ArrowLeft className="mr-1 inline" size={17} />戻る
-          </button>
         </div>
       </div>
     </AppShell>
