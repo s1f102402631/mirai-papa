@@ -5,30 +5,12 @@ import Link from "next/link";
 import AppShell from "../../components/AppShell";
 
 const scaleQuestions = [
-  {
-    id: "q3",
-    text: "【診断前】自分が将来（あるいは今）育児をすることについて、関心がある。",
-  },
-  {
-    id: "q4",
-    text: "【診断後】自分が将来（あるいは今）育児をすることについて、関心がある。",
-  },
-  {
-    id: "q5",
-    text: "【診断前】育児とは具体的にどのようなことをするのか、理解している。",
-  },
-  {
-    id: "q6",
-    text: "【診断後】育児とは具体的にどのようなことをするのか、理解している。",
-  },
-  {
-    id: "q7",
-    text: "【診断前】育児は「自分にも関係のあること」だと感じている。",
-  },
-  {
-    id: "q8",
-    text: "【診断後】育児は「自分にも関係のあること」だと感じている。",
-  },
+  { id: "q3", text: "【診断前】自分が将来（あるいは今）育児をすることについて、関心がある。" },
+  { id: "q4", text: "【診断後】自分が将来（あるいは今）育児をすることについて、関心がある。" },
+  { id: "q5", text: "【診断前】育児とは具体的にどのようなことをするのか、理解している。" },
+  { id: "q6", text: "【診断後】育児とは具体的にどのようなことをするのか、理解している。" },
+  { id: "q7", text: "【診断前】育児は「自分にも関係のあること」だと感じている。" },
+  { id: "q8", text: "【診断後】育児は「自分にも関係のあること」だと感じている。" },
 ];
 
 export default function Survey() {
@@ -51,9 +33,6 @@ export default function Survey() {
           <p className="mt-6 text-xs font-black tracking-[.2em] text-[#ef7548]">THANK YOU</p>
           <h1 className="mt-3 text-3xl font-black text-[#163b68]">アンケートへのご回答<br />ありがとうございました！</h1>
           <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-slate-500">いただいた回答は、みらいパパの改善や研究の参考にさせていただきます。</p>
-          <Link href="/" className="mt-8 inline-flex rounded-2xl bg-[#ef7548] px-8 py-4 font-black text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#df6237]">
-            最初の画面へ
-          </Link>
         </div>
       </AppShell>
     );
@@ -100,8 +79,7 @@ export default function Survey() {
               <p className="text-xs font-black text-[#ef7548]">Q{index + 3}</p>
               <h2 className="mt-3 text-xl font-black leading-relaxed text-[#163b68]">{question.text}</h2>
               <div className="mt-7 flex items-center justify-between text-xs font-bold text-slate-400">
-                <span>まったくそう思わない</span>
-                <span>とてもそう思う</span>
+                <span>まったくそう思わない</span><span>とてもそう思う</span>
               </div>
               <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => (
@@ -115,7 +93,7 @@ export default function Survey() {
           ))}
 
           <button type="submit" className="w-full rounded-2xl bg-[#ef7548] px-6 py-4 font-black text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#df6237]">
-            アンケートを送信する
+            送信
           </button>
         </form>
       </div>
