@@ -55,10 +55,6 @@ export default function Result() {
           このタイプの未来を見る
         </Link>
 
-        <Link href="/" className="mt-4 flex items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 font-black text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
-          終了する
-        </Link>
-
         <Link href="/diagnosis" className="mt-4 block text-center text-sm font-bold text-slate-400">
           <RotateCcw size={14} className="mr-1 inline" />もう一度診断する
         </Link>
